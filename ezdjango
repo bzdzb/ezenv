@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+####   C O N F I G   ####
+BASHRC='~/.bashrc'
+LOG=~/ezdjango_install.log
+
+
+####   L I B   ####
+function echo_error() { printf "$1\n\nSee install log:\n\n  $LOG\n\n" >&2; }
+
+function install_django() {
+	local version="django"
+	if [ "$1" != "" ]; then
+		version="django==$1"
+	fi
+	pip install $version >> $LOG 2>&1
+	if [ $? -eq 0 ]; then echo true; else echo false; fi
+}
+
+
+####   M A I N   ####
+if [ $# -lt 1 -o $# -gt 3 ]; then
+	echo "Usage: `basename $0` <virtualenv-name> [django-version] [python-version]" >&2
+	echo "       'django-version' defaults to latest stable." >&2
+	echo "       'python-version' defaults to first in PATH." >&2
+	exit
+else
+	virtualenv=$1
+	django_vers=$2
+	python_vers=$3
+fi
+
+# Create virtualenv instance
+ezenv $virtualenv $python_vers >> $LOG 2>&1
+if [ $? -ne 0 ]; then
+	echo_error "Error: problem creating virtualenv."
+	exit 1
+fi
+
+# Initialize pyenv virtualenv
+eval bashrc=$BASHRC
+source $bashrc >> $LOG 2>&1 && \
+pyenv activate $virtualenv >> $LOG 2>&1
+
+echo -n "Installing Django... "
+if $(install_django $django_vers); then
+	printf "done.\n\nTo activate, run:\n"
+	printf "  source $BASHRC && pyenv activate $virtualenv\n\n"
+	rm -f $LOG
+else
+	echo_error "Error: problem installing Django."
+	exit 2
+fi
