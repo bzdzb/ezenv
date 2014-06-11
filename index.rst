@@ -5,9 +5,9 @@
 
 ezenv
 =====
-A rapid pyenv_ + pyenv-virutalenv_ instance creation tool.
+A rapid pyenv_ + pyenv-virtualenv_ instance creation tool.
 
-Contents:
+.. Contents:
 
 .. toctree::
    :maxdepth: 2
@@ -24,6 +24,10 @@ Features
 
 Related Links
 =============
+* pyenv_
+* pyenv-virtualenv_
+* virtualenv_
+
 .. _pyenv: https://github.com/yyuu/pyenv
 .. _pyenv-virtualenv: https://github.com/yyuu/pyenv-virtualenv
 .. _virtualenv: https://github.com/pypa/virtualenv
@@ -33,7 +37,6 @@ Related Links
 
 Index
 =====
-
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
