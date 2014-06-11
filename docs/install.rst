@@ -8,7 +8,7 @@ Installation
 ------------
 .. code-block:: bash
 
-  git clone ``https://github.com/bzdzb/ezenv.git``
+  git clone https://github.com/bzdzb/ezenv.git
   cd ezenv
   INSTALL_DIR=~/bin
   cp ezenv ezdjango $INSTALL_DIR
