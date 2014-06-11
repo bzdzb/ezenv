@@ -5,7 +5,7 @@
 
 ezenv
 =====
-A rapid _pyenv + pyenv-virutalenv instance creation tool.
+A rapid pyenv_ + pyenv-virutalenv_ instance creation tool.
 
 Contents:
 
