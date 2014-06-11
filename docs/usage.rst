@@ -1,62 +1,8 @@
-.. ezenv documentation master file, created by
-   sphinx-quickstart on Wed Jun 11 09:24:13 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-ezenv
-=====
-A rapid pyenv_ + pyenv-virtualenv_ instance creation tool.
-
-.. Contents:
-
-.. toctree::
-   :maxdepth: 2
-
-
-Features
---------
-* Rapid virtualenv_ deployments with a single ``ezenv`` command.
-* Quickly deploy a virtualenv_ for any Python version using isolated pyenv_ based Python installs.
-* Automatically installs pyenv_ and pyenv-virtualenv_ for you if you don't have them.
-* Will automatically fall back to using git_ for satisfying dependencies if brew_ is unavailable.
-* Easily deploy any Django and Python version combination using ``ezdjango``.
-
-Requirements
-------------
-* OS X (Linux and others should work, but are untested)
-* Python
-* Bash
-* Homebrew_ or Git_
-
-
-Installation
-------------
-To install simply set ``INSTALL_DIR`` to where you would like to install.
-This should probably be somewhere in your ``PATH`` or you can add it to your
-path using the optional steps shown in the "**Add INSTALL_DIR to your PATH**" section below.
-
-Install
-~~~~~~~
-.. code-block:: bash
-
-  git clone ``https://github.com/bzdzb/ezenv.git``
-  cd ezenv
-  INSTALL_DIR=~/bin
-  cp ezenv ezdjango $INSTALL_DIR
-  chmod +x $INSTALL_DIR/ez{env,django}
-
-Add INSTALL_DIR to your PATH *(optional)*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. code-block:: bash
-
-  echo "export PATH=$INSTALL_DIR:\$PATH" >> ~/.bashrc
-  . ~/.bashrc
-
-
 Usage
------
-Create a virtualenv
-~~~~~~~~~~~~~~~~~~~
+=====
+
+Creating a virtualenv
+-------------------
 .. code-block:: bash
 
    $ ezenv example
@@ -70,7 +16,7 @@ Create a virtualenv
      source ~/.bashrc && pyenv activate example
 
 Using your new virtualenv
-~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------
 .. code-block:: bash
 
    $ source ~/.bashrc && pyenv activate example
@@ -78,8 +24,8 @@ Using your new virtualenv
    /Users/bzdzb/.pyenv/versions/example/bin/python
    (example) $
 
-Create a virtualenv for specific Python version
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating a virtualenv for specific Python version
+-----------------------------------------------
 .. code-block:: bash
 
    $ ezenv example34 3.4.1
@@ -97,8 +43,8 @@ Create a virtualenv for specific Python version
    Python 3.4.1 
    (example34) $
 
-Create a Django-ready virtualenv
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating a Django-ready virtualenv
+--------------------------------
 .. code-block:: bash
 
    $ ezdjango dj
@@ -119,8 +65,8 @@ Create a Django-ready virtualenv
    '1.6.5'
 
 
-Create virtualenv with a specific Django version
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating virtualenv with a specific Django version
+------------------------------------------------
 .. code-block:: bash
 
    $ ezdjango dj1.5 1.5.8
@@ -141,8 +87,8 @@ Create virtualenv with a specific Django version
    '1.5.8'
 
 
-Create virtualenv with specific Python and Django versions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating virtualenv with specific Python and Django versions
+----------------------------------------------------------
 .. code-block:: bash
 
    $ ezdjango djPyPy 1.6.5 pypy-2.3
@@ -164,12 +110,12 @@ Create virtualenv with specific Python and Django versions
 
 
 pyenv
------
+=====
 ezenv uses pyenv_ and pyenv-virtualenv_ under the hood, so you can still use all
 of the pyenv commands for managing your pyenv and pyenv-virtualenv instances.
 
 Listing installed python versions and virtualenv
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------------------
 .. code-block:: bash
 
    $ pyenv versions
@@ -183,7 +129,7 @@ Listing installed python versions and virtualenv
      pypy-2.3
 
 Listing available python versions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------
 .. code-block:: bash
 
    $ pyenv install --list
@@ -197,7 +143,7 @@ Listing available python versions
      stackless-dev
 
 Removing a pyenv python version or virtualenv
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------------
 .. code-block:: bash
 
    $ pyenv uninstall djPyPy
@@ -206,23 +152,4 @@ Removing a pyenv python version or virtualenv
    pyenv: remove /Users/bzdzb/.pyenv/versions/3.4.1? y
 
 
-Related Links
-=============
-* pyenv_
-* pyenv-virtualenv_
-* virtualenv_
-
-.. _pyenv: https://github.com/yyuu/pyenv
-.. _pyenv-virtualenv: https://github.com/yyuu/pyenv-virtualenv
-.. _virtualenv: https://github.com/pypa/virtualenv
-.. _brew: http://brew.sh
-.. _Homebrew: http://brew.sh
-.. _git: http://git-scm.com
-.. _Git: http://git-scm.com
-
-
-Index
-=====
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. include:: urls.rst
