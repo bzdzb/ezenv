@@ -2,7 +2,7 @@ Getting Started
 ===============
 To install simply set ``INSTALL_DIR`` to where you would like to install.
 This should probably be somewhere in your ``PATH`` or you can add it to your
-path using the optional steps shown in the "**Add INSTALL_DIR to your PATH**" section below.
+path using the optional steps shown in the "**Adding INSTALL_DIR to your PATH**" section below.
 
 Installation
 ------------
