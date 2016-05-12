@@ -10,7 +10,7 @@
 
 
 ## Requirements
- * OS X (Linux and others should work, but are untested)
+ * OS X or Linux (other *nixes should work, but are untested)
  * Python
  * Bash
  * Homebrew (http://brew.sh) or Git (http://git-scm.com)
@@ -149,7 +149,7 @@ ezenv uses pyenv and pyenv-virtualenv under the hood, so you can still use all o
 
 ---
 
-Copyright &copy; 2014, Brett Anderson (https://github.com/bzdzb)
+Copyright &copy; 2016, Brett Anderson (https://github.com/bzdzb)
 All rights reserved.
 
 
