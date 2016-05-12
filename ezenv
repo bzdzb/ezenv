@@ -1,44 +1,35 @@
 #!/usr/bin/env bash
 
 ####   C O N F I G   ####
+PYENV_ROOT="$HOME/.pyenv"
+PYENV_REPO="https://github.com/yyuu/pyenv.git"
+PYENV_VIRTUALENV_REPO="https://github.com/yyuu/pyenv-virtualenv.git"
 BASHRC='~/.bashrc'
-LOG=~/ezenv_install.log
-PYENV_HOME=~/.pyenv
-PYENV_REPO='https://github.com/yyuu/pyenv.git'
-PYENV_VIRTUALENV_HOME=$PYENV_HOME/plugins/pyenv-virtualenv
-PYENV_VIRTUALENV_REPO='https://github.com/yyuu/pyenv-virtualenv.git'
-
+LOG="$HOME/ezenv_install.log"
+export PATH="$PYENV_ROOT/bin:$PATH"
 
 ####   L I B   ####
 function usage {
 	echo "usage: `basename $0` <virtualenv-name> [python-version]" >&2
 	echo "'python-version' defaults to first in PATH." >&2
 }
-function found { echo '-- YES' >> $LOG; echo true; }
-function notfound { echo '-- NO' >> $LOG; echo false; }
-function success { echo '-- DONE' >> $LOG; echo true; }
-function fail { echo '!! FAILED' >> $LOG; echo false; }
+function found { echo '-- YES' >&3; echo true; }
+function notfound { echo '-- NO' >&3; echo false; }
+function success { echo '-- DONE' >&3; echo true; }
+function fail { echo '!! FAILED' >&3; echo false; }
 function echo_error() { printf "$1\n\nSee install log:\n\n  $LOG\n\n" >&2; }
 
-function pyenv_is_installed() {
-	echo "-- Checking if pyenv is installed..." >> $LOG
-	if which pyenv > /dev/null; then found; else notfound; fi
+function add_pyenv_path_to_bashrc() {
+	local bashrc=${BASHRC/#\~/$HOME}  # Expand to absolute path
+	$(cat $bashrc | grep PATH | grep -i pyenv) && return
+	echo -e "\nexport PATH=\"$PYENV_ROOT/bin:\$PATH\"" >> $bashrc
 }
-function pyenv_virtualenv_is_installed() {
-	if ! $(pyenv_is_installed); then echo false; fi
-	echo "-- Checking if pyenv-virtualenv is installed..." >> $LOG
-	if pyenv virtualenvs > /dev/null 2>> $LOG; then
-		found
-	else
-		notfound
-	fi
-}
+
 function pyenv_python_version_installed() {
 	# Args:
 	#   $1 - Python version. E.g.: 2.7.7
-	if ! $(pyenv_is_installed); then echo false; fi
-	echo "-- Checking if pyenv python version '$1' is installed..." >> $LOG
-	pyenv rehash > /dev/null
+	echo "-- Checking if pyenv python version '$1' is installed..." >&3
+	pyenv rehash >&3 2>&3
 	if $(pyenv versions | sed 's/^ *//g' | grep "^$1$" > /dev/null); then
 		found
 	else
@@ -49,8 +40,7 @@ function pyenv_python_version_installed() {
 function virtualenv_instance_exists() {
 	# Args:
 	#   $1 - Name of virtualenv.
-	if ! $(pyenv_virtualenv_is_installed); then echo false; fi
-	echo "-- Checking if pyenv virtualenv '$1' exists..." >> $LOG
+	echo "-- Checking if pyenv virtualenv '$1' exists..." >&3
 	if $(pyenv versions | sed 's/^ *//g' | grep "^$1$" > /dev/null); then
 		found
 	else
@@ -59,41 +49,49 @@ function virtualenv_instance_exists() {
 }
 
 function brew_install_pyenv() {
-	echo "$ brew update" >> $LOG
-	brew update >> $LOG 2>&1 && \
-	echo "$ brew install pyenv" >> $LOG
-	brew install pyenv >> $LOG 2>&1
+	echo "$ brew update" >&3
+	brew update >&3 2>&3 && \
+	echo "$ brew install pyenv" >&3
+	brew install pyenv >&3 2>&3
 	if [ $? -eq 0 ]; then echo true; else echo false; fi
 }
 function brew_install_pyenv_virtualenv() {
-	echo "$ brew update" >> $LOG
-	brew update >> $LOG 2>&1 && \
-	echo "$ brew install pyenv-virtualenv" >> $LOG
-	brew install pyenv-virtualenv >> $LOG 2>&1
+	echo "$ brew update" >&3
+	brew update >&3 2>&3 && \
+	echo "$ brew install pyenv-virtualenv" >&3
+	brew install pyenv-virtualenv >&3 2>&3
 	if [ $? -eq 0 ]; then echo true; else echo false; fi
 }
 
 function git_install_pyenv() {
-	echo "$ git clone --depth=1 $PYENV_REPO $PYENV_VIRTUALENV_HOME" >> $LOG
-	git clone --depth=1 $PYENV_REPO $PYENV_VIRTUALENV_HOME >> $LOG 2>&1
-	if [ $? -eq 0 ]; then echo true; else echo false; fi
+	echo "$ git clone --depth=1 $PYENV_REPO $PYENV_ROOT" >&3
+	git clone --depth=1 $PYENV_REPO $PYENV_ROOT >&3 2>&3
+	if [ $? -eq 0 ]; then
+		add_pyenv_path_to_bashrc
+		echo true
+	else
+		echo false
+	fi
 }
 function git_install_pyenv_virtualenv() {
-	echo "$ git clone --depth=1 $PYENV_VIRUALENV_REPO $PYENV_VIRTUALENV_HOME" >> $LOG
-	git clone --depth=1 $PYENV_VIRTUALENV_REPO $PYENV_VIRTUALENV_HOME >> $LOG 2>&1
+	echo "$ git clone --depth=1 $PYENV_VIRUALENV_REPO $PYENV_VIRTUALENV_HOME" >&3
+	local pyenv_plugins_dir="$(pyenv root)/plugins"
+	mkdir -p $pyenv_plugins_dir 2>&3
+	git clone --depth=1 $PYENV_VIRTUALENV_REPO $pyenv_plugins_dir/pyenv-virtualenv >&3 2>&3
 	if [ $? -eq 0 ]; then echo true; else echo false; fi
 }
 
 function install_pyenv() {
-	if which pyenv > /dev/null; then
-		echo true
-		return
-	fi
-	echo "-- Installing pyenv..." >> $LOG
+	local bashrc=${BASHRC/#\~/$HOME}  # Expand to absolute path
+	touch $LOG
+
+	echo "-- Checking if pyenv is installed..." >&3
+	which pyenv >/dev/null && success && return
+	echo "-- Installing pyenv..." >&3
 	local installed=false
-	if which brew > /dev/null 2>> $LOG; then
+	if which brew > /dev/null 2>&1; then
 		installed=$(brew_install_pyenv)
-	elif which git > /dev/null 2>> $LOG; then
+	elif which git > /dev/null 2>&1; then
 		installed=$(git_install_pyenv)
 	else
 		echo_error "Git (http://git-scm.com) or Homebrew (http://brew.sh) required."
@@ -102,46 +100,50 @@ function install_pyenv() {
 }
 
 function install_pyenv_virtualenv() {
-	if pyenv virtualenvs > /dev/null; then
-		echo true
-		return
-	fi
-	echo "-- Installing pyenv-virtualenv..." >> $LOG
+	touch $LOG
+	echo "-- Checking if pyenv-virtualenv is installed..." >&3
+	pyenv help virtualenv > /dev/null 2>&1 && success && return
+	echo "-- Installing pyenv-virtualenv..." >&3
 	local installed=false
-	if which brew > /dev/null 2>> $LOG; then
+	if which brew > /dev/null 2>&1; then
 		installed=$(brew_install_pyenv_virtualenv)
-	elif which git > /dev/null 2>> $LOG; then
+	elif which git > /dev/null 2>&1; then
 		installed=$(git_install_pyenv_virtualenv)
 	else
-		echo_error "Git (http://git-scm.com) or Homebrew (http://brew.sh) required."
+		echo_error "Git (http://git-scm.com) and Homebrew (http://brew.sh) required."
 	fi
 	if $installed; then success; else fail; fi
 }
 
 function configure_bashrc() {
-	eval local bashrc=$BASHRC
-	fgrep 'eval "$(pyenv init -)"' $bashrc > /dev/null 2>> $LOG
-	if [ $? -eq 0 ]; then
-		echo "** Existing 'pyenv init' entry in $BASHRC. Skipping." >> $LOG
-		echo true
-		return
-	fi
-	echo "-- Adding pyenv init to ${BASHRC}..." >> $LOG
-	cat <<-EOF >> $bashrc 2>> $LOG
+	local bashrc=${BASHRC/#\~/$HOME}  # Expand to absolute path
 
-	# Enable pyenv shims + autocompletion
-	if which pyenv > /dev/null; then eval "\$(pyenv init -)"; fi
+	for init in init virtualenv-init; do
+		fgrep "eval \"\$(pyenv $init -)\"" $bashrc > /dev/null 2>&1
+		if [ $? -eq 0 ]; then
+			echo "** Existing 'pyenv $init' entry in $BASHRC. Skipping." >&3
+			continue
+		fi
+		echo "-- Adding pyenv $init to $BASHRC..." >&3
+		echo -e "\nwhich pyenv > /dev/null && eval \"\$(pyenv $init -)\"" >> $bashrc 2>&3
+		if [ $? -ne 0 ]; then
+			fail
+			return
+		fi
+	done
 
-	EOF
-	if [ $? -eq 0 ]; then success; else fail; fi
 }
 
 function init_pyenv() {
-	echo "-- Initializing pyenv..." >> $LOG
-	local initialized=false
-	eval "$(pyenv init -)" >> $LOG 2>&1
-	if [ $? -eq 0 ]; then initialized=true; fi
-	if $initialized; then success; else fail; fi
+	echo "-- Initializing pyenv..." >&3
+	eval "$(pyenv init -)" >&3 2>&3 && success && return
+	fail
+}
+
+function init_pyenv_virtualenv() {
+	echo "-- Initializing pyenv virtualenv..." >&3
+	eval "$(pyenv virtualenv-init -)" >&3 2>&3 && success && return
+	fail
 }
 
 function create_virtualenv() {
@@ -150,25 +152,20 @@ function create_virtualenv() {
 	local pyenv_error=false
 	local created=false
 	if [ "$version" = "" ]; then
-		echo -n "** No python version specified. Using `pyenv which python`" >> $LOG
-		echo " (python=`python -V 2>&1 | awk '{print $2}'`)" >> $LOG
-		version="system"
+		echo -n "** No python version specified. Using `pyenv which python`" >&3
+		version=$(pyenv versions | egrep '^* ' | awk '{print $2}')
+		echo " (python==$version)" >&3
 	elif $(pyenv versions | sed 's/^ *//g' | grep "^$version$" > /dev/null); then
-		echo "** Pyenv python '$version' already installed. Using existing." >> $LOG
+		echo "** Pyenv python '$version' already installed. Using existing." >&3
 	else
-		version=$(python -V 2>&1 | awk '{print $2}')
-		echo "-- Installing pyenv python==${version}..." >> $LOG
-		pyenv install $version >> $LOG 2>&1
-		if [ $? -eq 0 ]; then
-			echo '-- DONE' >> $LOG
-		else
-			echo '!! FAILED' >> $LOG
+		pyenv install $version | tee -a "$LOG" >&2
+		if [ $? -ne 0 ]; then
 			pyenv_error=true
 		fi
 	fi
 	if ! $pyenv_error; then
-		echo "-- Creating pyenv virtualenv '$virtualenv'..." >> $LOG
-		pyenv virtualenv $version $virtualenv >> $LOG 2>&1
+		echo -n "Creating pyenv virtualenv '$virtualenv'... " | tee -a "$LOG" >&2
+		pyenv virtualenv $version $virtualenv >&3 2>&3
 		if [ $? -eq 0 ]; then created=true; fi
 	fi
 	if $created; then success; else fail; fi
@@ -176,14 +173,14 @@ function create_virtualenv() {
 
 
 ####   M A I N   ####
-if [ $# -eq 1 -o $# -eq 2 ]; then
-	if $(virtualenv_instance_exists $1); then
-		echo "pyenv virtualenv '$1' already exists."
-		printf "\nTo activate, run:\n  source $BASHRC && pyenv activate $1\n\n"
-		rm -f $LOG
-		exit
-	fi
-else usage; exit; fi
+
+rm -f "$LOG" 2> /dev/null
+exec 3>> $LOG
+
+if [ $# -ne 1 -a $# -ne 2 ]; then
+	usage
+	exit -1
+fi
 
 echo -n "Installing pyenv... "
 if ! $(install_pyenv); then
@@ -192,32 +189,47 @@ if ! $(install_pyenv); then
 	exit 1
 else echo "done."; fi
 
+echo -n "Initializing pyenv... "
+if ! $(init_pyenv); then
+	echo "fail."
+	echo_error "Error: problem initializing pyenv"
+	exit 2
+else echo "done."; fi
+
 echo -n "Installing pyenv-virtualenv... "
 if ! $(install_pyenv_virtualenv ); then
 	echo "fail."
 	echo_error "Error: problem installing pyenv-virtualenv."
-	exit 2
+	exit 3
 else echo "done."; fi
 
-echo -n "Adding pyenv init to ${BASHRC}... "
+echo -n "Initializing pyenv-virtualenv... "
+if ! $(init_pyenv_virtualenv); then
+	echo "fail."
+	echo_error "Error: problem initializing pyenv-virtualenv"
+	exit 4
+else echo "done."; fi
+
+echo -n "Adding pyenv init and virtualenv-init to $BASHRC... "
 if ! $(configure_bashrc); then
 	echo "fail."
 	echo_error "Warning: problem setting up $BASHRC"
 else echo "done."; fi
 
-echo -n "Initializing pyenv... "
-if ! $(init_pyenv); then
-	echo "fail."
-	echo_error "Error: problem initializing pyenv"
-	exit 3
-else echo "done."; fi
 
-echo -n "Creating pyenv virualenv $1. May take a few min... "
+if $(virtualenv_instance_exists $1); then
+	echo "pyenv virtualenv '$1' already exists."
+	printf "\nTo activate, run:\n  source $BASHRC && pyenv activate $1\n\n"
+	rm -f $LOG
+	exit 5
+fi
+
 if ! $(create_virtualenv $1 $2); then
 	echo "fail."
 	echo_error "Error: problem creating virtualenv."
-	exit 4
+	exit 6
 else echo "done."; fi
+
 
 echo
 echo "Get started using your new virtualenv with:"
